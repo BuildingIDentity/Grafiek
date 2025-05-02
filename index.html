@@ -2,35 +2,49 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>Crypto & FRED Indicatoren (€)</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-    <script src="script.js" defer></script>
+    <title>Crypto & Economische Indicatoren</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background: #f7f7f7; }
-        canvas { width: 100% !important; height: 600px !important; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f0f0f0;
+            text-align: center;
+        }
+        #chart {
+            max-width: 1200px;
+            max-height: 600px;
+            margin: auto;
+        }
     </style>
 </head>
 <body>
-    <h2>Crypto & FRED Economische Indicatoren (€)</h2>
+    <h2>Crypto & FRED Economische Indicatoren</h2>
 
     <div>
-        <strong>Economische Indicatoren:</strong><br>
-        <input type="checkbox" class="indicator" value="GDP" id="GDP" checked> <label for="GDP">BBP (GDP)</label>
-        <input type="checkbox" class="indicator" value="UNRATE" id="UNRATE"> <label for="UNRATE">Werkloosheid (%)</label>
-        <input type="checkbox" class="indicator" value="CPIAUCSL" id="CPIAUCSL"> <label for="CPIAUCSL">Inflatie (%)</label>
-        <input type="checkbox" class="indicator" value="DGS10" id="DGS10"> <label for="DGS10">10-jaar rente (%)</label>
+        <!-- Economische indicatoren -->
+        <label><input type="checkbox" class="indicator" value="GDP"> BBP (GDP)</label>
+        <label><input type="checkbox" class="indicator" value="UNRATE"> Werkloosheid (%)</label>
+        <label><input type="checkbox" class="indicator" value="CPIAUCSL"> Inflatie (CPI)</label>
+        <label><input type="checkbox" class="indicator" value="DGS10"> 10j Rente (%)</label>
+        <label><input type="checkbox" class="indicator" value="M2SL"> Geldvoorraad M2</label>
+        <label><input type="checkbox" class="indicator" value="PPIACO"> Producentenprijsindex (PPI)</label>
+        <label><input type="checkbox" class="indicator" value="INDPRO"> Industriële Productie</label>
+        <label><input type="checkbox" class="indicator" value="HOUST"> Nieuwe woningen</label>
     </div>
-    <br>
+
     <div>
-        <strong>Crypto:</strong><br>
-        <input type="checkbox" class="crypto" value="bitcoin" id="bitcoin" checked> <label for="bitcoin">BTC (€)</label>
-        <input type="checkbox" class="crypto" value="ripple" id="ripple"> <label for="ripple">XRP (€)</label>
-        <input type="checkbox" class="crypto" value="vechain" id="vechain"> <label for="vechain">VeChain (€)</label>
-        <input type="checkbox" class="crypto" value="bluzelle" id="bluzelle"> <label for="bluzelle">Bluzelle (€)</label>
+        <!-- Cryptomunten -->
+        <label><input type="checkbox" class="crypto" value="bitcoin"> BTC (€)</label>
+        <label><input type="checkbox" class="crypto" value="ripple"> XRP (€)</label>
+        <label><input type="checkbox" class="crypto" value="vechain"> VeChain (€)</label>
+        <label><input type="checkbox" class="crypto" value="bluzelle"> Bluzelle (€)</label>
     </div>
-    <br>
+
     <button onclick="updateChart()">Update Grafiek</button>
 
     <canvas id="chart"></canvas>
+
+    <script src="script.js"></script>
 </body>
 </html>
