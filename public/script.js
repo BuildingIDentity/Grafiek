@@ -67,10 +67,7 @@ async function updateChart() {
       interaction: { mode: "index", intersect: false },
       scales: {
         x: { type: "time", title: { display: true, text: "Datum" } },
-        y1: {
-          type: "linear", position: "left",
-          title: { display: true, text: "FRED-waarde" }
-        },
+        y1: { type: "linear", position: "left",  title: { display: true, text: "FRED-waarde" }},
         y2: {
           type: "linear", position: "right",
           title: { display: true, text: "Crypto-prijs (USD)" },
@@ -81,5 +78,5 @@ async function updateChart() {
   });
 }
 
-// Init
+// Initial render
 updateChart();
