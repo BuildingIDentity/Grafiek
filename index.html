@@ -4,28 +4,61 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Crypto & FRED Indicator Dashboard</title>
+
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Date-adapter voor Chart.js (time scales) -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+
   <style>
-    body { font-family: Arial; padding:20px; text-align:center; background:#f5f5f5;}
-    .controls label { margin: 0 8px; }
-    canvas { max-width:800px; margin:20px auto; display:block; }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+      text-align: center;
+    }
+    .controls {
+      margin-bottom: 20px;
+    }
+    .controls label {
+      margin: 0 8px;
+      font-size: 0.9em;
+    }
+    button {
+      margin-top: 10px;
+      padding: 6px 12px;
+    }
+    canvas {
+      max-width: 800px;
+      margin: 20px auto;
+      display: block;
+    }
   </style>
 </head>
 <body>
+
   <h1>Crypto & FRED Indicatoren</h1>
+
   <div class="controls">
+    <!-- FRED indicator-checkboxen -->
     <label><input type="checkbox" class="fred" value="GDP" checked> BBP (GDP)</label>
-    <label><input type="checkbox" class="fred" value="UNRATE" checked> Werkloosheid (UNRATE)</label>
-    <label><input type="checkbox" class="fred" value="CPIAUCSL" checked> Inflatie (CPIAUCSL)</label>
-    <br><br>
+    <label><input type="checkbox" class="fred" value="UNRATE" checked> Werkloosheid</label>
+    <label><input type="checkbox" class="fred" value="CPIAUCSL" checked> Inflatie (CPI)</label>
+    <br>
+
+    <!-- Crypto-checkboxen -->
     <label><input type="checkbox" class="crypto" value="bitcoin" checked> BTC</label>
     <label><input type="checkbox" class="crypto" value="ripple" checked> XRP</label>
     <label><input type="checkbox" class="crypto" value="vechain"> VeChain</label>
     <label><input type="checkbox" class="crypto" value="bluzelle"> Bluzelle</label>
-    <br><br>
+    <br>
+
     <button onclick="updateChart()">Update Grafiek</button>
   </div>
-  <canvas id="chart"></canvas>
+
+  <canvas id="chart" height="400"></canvas>
+
+  <!-- Je eigen script: -->
   <script src="script.js"></script>
 </body>
 </html>
