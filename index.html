@@ -3,17 +3,124 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Crypto & Economische Indicatoren Dashboard</title>
+  <title>Crypto & Economische Indicatoren</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="script.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
   <style>
-    body { font-family: Arial; padding: 20px; background: #f8f9fa; }
+    body { font-family: Arial; background: #f9f9f9; padding: 20px; }
     h1 { text-align: center; }
-    canvas { max-width: 100%; }
+    .controls { text-align: center; margin-bottom: 20px; }
+    canvas { max-width: 1000px; margin: auto; display: block; }
   </style>
 </head>
 <body>
   <h1>Crypto & VS Economische Indicatoren</h1>
+  <div class="controls">
+    <label>Selecteer crypto:</label>
+    <select id="cryptoSelect">
+      <option value="all">Alle</option>
+      <option value="bitcoin">Bitcoin (BTC)</option>
+      <option value="xrp">XRP</option>
+      <option value="bluzelle">Bluzelle</option>
+      <option value="vechain">VeChain</option>
+    </select>
+    <button onclick="fetchData()">Toon Grafiek</button>
+  </div>
   <canvas id="chart" width="1000" height="500"></canvas>
+
+  <script>
+    const chartEl = document.getElementById("chart").getContext("2d");
+    let chart;
+
+    async function fetchData() {
+      const selected = document.getElementById("cryptoSelect").value;
+      const datasets = [];
+      const apiKey = "2e36ea2956c8ea9b075070975eb33c66";
+      const proxy = "https://api.allorigins.win/raw?url=";
+
+      const coins = {
+        bitcoin: "bitcoin",
+        xrp: "ripple",
+        bluzelle: "bluzelle",
+        vechain: "vechain"
+      };
+
+      if (selected === "all" || coins[selected]) {
+        const selectedCoins = selected === "all" ? Object.keys(coins) : [selected];
+
+        for (let key of selectedCoins) {
+          const res = await fetch(`https://api.coingecko.com/api/v3/coins/${coins[key]}/market_chart?vs_currency=usd&days=30`);
+          const data = await res.json();
+          datasets.push({
+            label: `${key.toUpperCase()} / USD`,
+            data: data.prices.map(p => ({ x: new Date(p[0]), y: p[1] })),
+            borderColor: getColor(key),
+            yAxisID: "y1",
+            tension: 0.2
+          });
+        }
+      }
+
+      // FRED indicatoren toevoegen (voorbeeld: BBP en CPI)
+      const fredIndicators = [
+        { id: "GDP", label: "BBP (miljarden USD)", color: "blue" },
+        { id: "CPIAUCSL", label: "CPI (Inflatie)", color: "green" },
+        { id: "UNRATE", label: "Werkloosheid (%)", color: "red" }
+      ];
+
+      for (let ind of fredIndicators) {
+        const res = await fetch(`${proxy}https://api.stlouisfed.org/fred/series/observations?series_id=${ind.id}&api_key=${apiKey}&file_type=json`);
+        const json = await res.json();
+        datasets.push({
+          label: ind.label,
+          data: json.observations.filter(o => o.value !== ".").map(o => ({ x: new Date(o.date), y: parseFloat(o.value) })),
+          borderColor: ind.color,
+          yAxisID: "y2",
+          tension: 0.2
+        });
+      }
+
+      if (chart) chart.destroy();
+
+      chart = new Chart(chartEl, {
+        type: "line",
+        data: { datasets },
+        options: {
+          responsive: true,
+          interaction: { mode: "index", intersect: false },
+          scales: {
+            x: {
+              type: "time",
+              time: { unit: "day" },
+              title: { display: true, text: "Datum" }
+            },
+            y1: {
+              type: "linear",
+              position: "left",
+              title: { display: true, text: "Crypto (USD)" }
+            },
+            y2: {
+              type: "linear",
+              position: "right",
+              title: { display: true, text: "Economische Indicator" },
+              grid: { drawOnChartArea: false }
+            }
+          }
+        }
+      });
+    }
+
+    function getColor(name) {
+      const colors = {
+        bitcoin: "orange",
+        xrp: "purple",
+        bluzelle: "teal",
+        vechain: "brown"
+      };
+      return colors[name] || "gray";
+    }
+
+    fetchData();
+  </script>
 </body>
 </html>
