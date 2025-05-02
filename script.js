@@ -1,99 +1,78 @@
-// context van de canvas
-const ctx = document.getElementById("chart").getContext("2d");
+const ctx = document.getElementById('chart').getContext('2d');
 let chart;
 
-// CORS-proxy zodat FRED-aanroepen niet geblokkeerd worden
-const FRED_PROXY = "https://api.allorigins.win/raw?url=";
-const FRED_BASE  = "https://api.stlouisfed.org/fred/series/observations";
-const API_KEY    = "2e36ea2956c8ea9b075070975eb33c66";
+const FRED_API = 'https://api.stlouisfed.org/fred/series/observations';
+const FRED_KEY = '2e36ea2956c8ea9b075070975eb33c66';
 
-// Genereer een willekeurige kleur
-function getRandomColor() {
-  const r = Math.floor(Math.random()*200+20),
-        g = Math.floor(Math.random()*200+20),
-        b = Math.floor(Math.random()*200+20);
-  return `rgb(${r},${g},${b})`;
+// Crypto in EUR
+async function fetchCrypto(crypto) {
+    const res = await fetch(`https://api.coingecko.com/api/v3/coins/${crypto}/market_chart?vs_currency=eur&days=30`);
+    const data = await res.json();
+    return data.prices.map(p => ({x: new Date(p[0]), y: p[1]}));
 }
 
-// FRED data ophalen via proxy
-async function fetchFredObs(seriesId) {
-  const url = `${FRED_PROXY}${encodeURIComponent(
-    `${FRED_BASE}?series_id=${seriesId}&api_key=${API_KEY}&file_type=json`
-  )}`;
-  const res  = await fetch(url);
-  const json = await res.json();
-  return json.observations
-    .filter(o => o.value !== ".")
-    .map(o => ({ x: new Date(o.date), y: parseFloat(o.value) }));
+// Economische indicatoren van FRED
+async function fetchFred(series_id) {
+    const res = await fetch(`${FRED_API}?series_id=${series_id}&api_key=${FRED_KEY}&file_type=json`);
+    const data = await res.json();
+    return data.observations.map(obs => ({
+        x: new Date(obs.date),
+        y: parseFloat(obs.value)
+    })).filter(d => !isNaN(d.y));
 }
 
-// Crypto data ophalen van CoinGecko
-async function fetchCrypto(coin) {
-  const url  = `https://api.coingecko.com/api/v3/coins/${coin}/market_chart?vs_currency=usd&days=30`;
-  const res  = await fetch(url);
-  const json = await res.json();
-  return json.prices.map(p => ({ x: new Date(p[0]), y: p[1] }));
-}
-
-// Bouw en render de grafiek
 async function updateChart() {
-  // geselecteerde FRED-series
-  const fredSel   = [...document.querySelectorAll(".fred:checked")].map(el=>el.value);
-  // geselecteerde crypto-coins
-  const cryptoSel = [...document.querySelectorAll(".crypto:checked")].map(el=>el.value);
-  const datasets  = [];
+    const selectedIndicators = Array.from(document.querySelectorAll('.indicator:checked')).map(el => el.value);
+    const selectedCryptos = Array.from(document.querySelectorAll('.crypto:checked')).map(el => el.value);
 
-  // Voeg elk FRED-dataset toe
-  for (let id of fredSel) {
-    const data = await fetchFredObs(id);
-    datasets.push({
-      label: `FRED – ${id}`,
-      data,
-      borderColor: getRandomColor(),
-      yAxisID: "y1"
-    });
-  }
+    const datasets = [];
 
-  // Voeg elk crypto-dataset toe
-  for (let coin of cryptoSel) {
-    const data = await fetchCrypto(coin);
-    datasets.push({
-      label: `Crypto – ${coin}`,
-      data,
-      borderColor: getRandomColor(),
-      yAxisID: "y2"
-    });
-  }
-
-  // Vernieuw chart
-  if (chart) chart.destroy();
-  chart = new Chart(ctx, {
-    type: "line",
-    data: { datasets },
-    options: {
-      responsive: true,
-      interaction: { mode: "index", intersect: false },
-      scales: {
-        x: {
-          type: "time",
-          time: { unit: "day" },
-          title: { display: true, text: "Datum" }
-        },
-        y1: {
-          type: "linear",
-          position: "left",
-          title: { display: true, text: "FRED-waarde" }
-        },
-        y2: {
-          type: "linear",
-          position: "right",
-          title: { display: true, text: "Crypto-prijs (USD)" },
-          grid: { drawOnChartArea: false }
-        }
-      }
+    // Voeg indicatoren toe
+    for (const indicator of selectedIndicators) {
+        const data = await fetchFred(indicator);
+        datasets.push({
+            label: `FRED - ${indicator}`,
+            data,
+            borderColor: getRandomColor(),
+            yAxisID: 'y'
+        });
     }
-  });
+
+    // Voeg crypto toe
+    for (const crypto of selectedCryptos) {
+        const data = await fetchCrypto(crypto);
+        datasets.push({
+            label: `Crypto - ${crypto}`,
+            data,
+            borderColor: getRandomColor(),
+            yAxisID: 'y1'
+        });
+    }
+
+    if(chart) chart.destroy();
+
+    chart = new Chart(ctx, {
+        type: 'line',
+        data: { datasets },
+        options: {
+            responsive: true,
+            interaction: { mode: 'nearest', axis: 'x', intersect: false },
+            stacked: false,
+            scales: {
+                y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Economische Indicatoren' } },
+                y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'Crypto Prijs (€)' }, grid: { drawOnChartArea: false } }
+            }
+        }
+    });
 }
 
-// Initial render
+// Willekeurige kleuren
+function getRandomColor() {
+    const r = Math.floor(Math.random() * 255);
+    const g = Math.floor(Math.random() * 255);
+    const b = Math.floor(Math.random() * 255);
+    return `rgb(${r},${g},${b})`;
+}
+
+// Eerste keer grafiek laden
 updateChart();
