@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Crypto & FRED Dashboard</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crypto & FRED Indicator Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body { font-family: Arial; padding:20px; text-align:center; }
+    body { font-family: Arial; padding:20px; text-align:center; background:#f5f5f5;}
     .controls label { margin: 0 8px; }
     canvas { max-width:800px; margin:20px auto; display:block; }
   </style>
@@ -14,12 +14,10 @@
 <body>
   <h1>Crypto & FRED Indicatoren</h1>
   <div class="controls">
-    <!-- FRED indicators -->
     <label><input type="checkbox" class="fred" value="GDP" checked> BBP (GDP)</label>
     <label><input type="checkbox" class="fred" value="UNRATE" checked> Werkloosheid (UNRATE)</label>
-    <label><input type="checkbox" class="fred" value="CPIAUCSL" checked> CPI (CPIAUCSL)</label>
+    <label><input type="checkbox" class="fred" value="CPIAUCSL" checked> Inflatie (CPIAUCSL)</label>
     <br><br>
-    <!-- Crypto coins -->
     <label><input type="checkbox" class="crypto" value="bitcoin" checked> BTC</label>
     <label><input type="checkbox" class="crypto" value="ripple" checked> XRP</label>
     <label><input type="checkbox" class="crypto" value="vechain"> VeChain</label>
