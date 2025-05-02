@@ -1,116 +1,49 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Crypto & Economische Indicatoren</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1"></script>
   <style>
-    body { font-family: Arial; padding: 20px; background: #f8f9fa; }
-    h1 { text-align: center; }
-    .controls { margin-bottom: 20px; text-align: center; }
-    canvas { max-width: 100%; height: 500px; }
-    label { margin-right: 10px; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f8f9fa;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    canvas {
+      max-width: 1000px;
+      margin: 20px auto;
+      display: block;
+    }
+    .controls {
+      margin-bottom: 20px;
+    }
+    .controls label {
+      margin-right: 10px;
+    }
   </style>
 </head>
 <body>
   <h1>Crypto & VS Economische Indicatoren</h1>
+
   <div class="controls">
-    <label><input type="checkbox" class="indicator" value="inflation_expectation" checked> Inflatieverwachting (%)</label>
-    <label><input type="checkbox" class="indicator" value="btc" checked> BTC ($)</label>
-    <label><input type="checkbox" class="indicator" value="xrp"> XRP ($)</label>
-    <label><input type="checkbox" class="indicator" value="vechain"> VeChain ($)</label>
-    <label><input type="checkbox" class="indicator" value="blz"> BLZ ($)</label>
+    <label><input type="checkbox" class="indicator" value="btc" checked> Bitcoin (BTC)</label>
+    <label><input type="checkbox" class="indicator" value="xrp" checked> XRP</label>
+    <label><input type="checkbox" class="indicator" value="vechain" checked> VeChain</label>
+    <label><input type="checkbox" class="indicator" value="blz" checked> Bluzelle</label>
+    <label><input type="checkbox" class="indicator" value="inflation" checked> VS Inflatieverwachting</label>
     <button onclick="updateChart()">Update Grafiek</button>
   </div>
-  <canvas id="chart"></canvas>
-  <script>
-    const ctx = document.getElementById("chart").getContext("2d");
-    let chart;
 
-    const apiKey = "2e36ea2956c8ea9b075070975eb33c66"; // Jouw FRED API-key
+  <canvas id="chart" width="1000" height="500"></canvas>
 
-    async function fetchInflation() {
-      const res = await fetch(`https://api.stlouisfed.org/fred/series/observations?series_id=FWD5Y5Y&api_key=${apiKey}&file_type=json`);
-      const json = await res.json();
-      return json.observations
-        .filter(obs => obs.value !== ".")
-        .map(obs => ({ x: new Date(obs.date), y: parseFloat(obs.value) }));
-    }
-
-    async function fetchCrypto(id) {
-      const res = await fetch(`https://api.coingecko.com/api/v3/coins/${id}/market_chart?vs_currency=usd&days=30`);
-      const json = await res.json();
-      return json.prices.map(p => ({ x: new Date(p[0]), y: p[1] }));
-    }
-
-    async function updateChart() {
-      const indicators = Array.from(document.querySelectorAll('.indicator:checked')).map(el => el.value);
-      const datasets = [];
-
-      if (indicators.includes("inflation_expectation")) {
-        const inflation = await fetchInflation();
-        datasets.push({
-          label: "Inflatieverwachting (%)",
-          data: inflation,
-          borderColor: "green",
-          yAxisID: "y2"
-        });
-      }
-
-      const cryptos = {
-        btc: "bitcoin",
-        xrp: "ripple",
-        vechain: "vechain",
-        blz: "bluzelle"
-      };
-
-      for (const key of Object.keys(cryptos)) {
-        if (indicators.includes(key)) {
-          const cryptoData = await fetchCrypto(cryptos[key]);
-          datasets.push({
-            label: key.toUpperCase() + " ($)",
-            data: cryptoData,
-            borderColor: getRandomColor(),
-            yAxisID: "y1"
-          });
-        }
-      }
-
-      if (chart) chart.destroy();
-      chart = new Chart(ctx, {
-        type: "line",
-        data: { datasets },
-        options: {
-          responsive: true,
-          interaction: { mode: "index", intersect: false },
-          scales: {
-            x: {
-              type: "time",
-              time: { unit: "day" },
-              title: { display: true, text: "Datum" }
-            },
-            y1: {
-              type: "linear",
-              position: "left",
-              title: { display: true, text: "Crypto ($)" }
-            },
-            y2: {
-              type: "linear",
-              position: "right",
-              title: { display: true, text: "Inflatieverwachting (%)" },
-              grid: { drawOnChartArea: false }
-            }
-          }
-        }
-      });
-    }
-
-    function getRandomColor() {
-      return `rgb(${Math.floor(Math.random()*255)}, ${Math.floor(Math.random()*255)}, ${Math.floor(Math.random()*255)})`;
-    }
-
-    updateChart();
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
