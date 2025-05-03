@@ -29,4 +29,50 @@ async function updateChart() {
 
     // Indicatoren laden
     for (const ind of indicators) {
-        const fredData = await
+        const fredData = await fetchFredData(ind);
+        datasets.push({
+            label: `Econ. Indicator - ${ind}`,
+            data: fredData,
+            borderColor: getRandomColor(),
+            yAxisID: 'y'
+        });
+    }
+
+    // Crypto's laden
+    for (const crypto of cryptos) {
+        const cryptoData = await fetchCryptoPrices(crypto);
+        datasets.push({
+            label: `Crypto - ${crypto}`,
+            data: cryptoData,
+            borderColor: getRandomColor(),
+            yAxisID: 'y1'
+        });
+    }
+
+    if(chart) chart.destroy();
+
+    chart = new Chart(ctx, {
+        type: 'line',
+        data: { datasets },
+        options: {
+            responsive: true,
+            interaction: { mode: 'index', intersect: false },
+            stacked: false,
+            plugins: { legend: { position: 'top' } },
+            scales: {
+                y: { type: 'linear', display: true, position: 'left' },
+                y1: { type: 'linear', display: true, position: 'right' }
+            }
+        }
+    });
+}
+
+function getRandomColor() {
+    const r = Math.floor(Math.random() * 255);
+    const g = Math.floor(Math.random() * 255);
+    const b = Math.floor(Math.random() * 255);
+    return `rgb(${r},${g},${b})`;
+}
+
+// Initial load
+updateChart();
