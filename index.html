@@ -32,19 +32,17 @@
         <label><input type="checkbox" class="indicator" value="INDPRO"> Industriële Productie</label>
         <label><input type="checkbox" class="indicator" value="HOUST"> Nieuwe woningen</label>
     </div>
-
+ <br>
     <div>
-        <!-- Cryptomunten -->
-        <label><input type="checkbox" class="crypto" value="bitcoin"> BTC (€)</label>
-        <label><input type="checkbox" class="crypto" value="ripple"> XRP (€)</label>
-        <label><input type="checkbox" class="crypto" value="vechain"> VeChain (€)</label>
-        <label><input type="checkbox" class="crypto" value="bluzelle"> Bluzelle (€)</label>
+        <strong>Crypto:</strong><br>
+        <input type="checkbox" class="crypto" value="bitcoin" id="bitcoin" checked> <label for="bitcoin">BTC (€)</label>
+        <input type="checkbox" class="crypto" value="ripple" id="ripple"> <label for="ripple">XRP (€)</label>
+        <input type="checkbox" class="crypto" value="vechain" id="vechain"> <label for="vechain">VeChain (€)</label>
+        <input type="checkbox" class="crypto" value="bluzelle" id="bluzelle"> <label for="bluzelle">Bluzelle (€)</label>
     </div>
-
+    <br>
     <button onclick="updateChart()">Update Grafiek</button>
 
     <canvas id="chart"></canvas>
-
-    <script src="script.js"></script>
 </body>
 </html>
