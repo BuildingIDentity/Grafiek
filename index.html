@@ -1,45 +1,145 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Crypto & Economische Indicatoren</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <title>Crypto & FRED Indicatoren</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 40px;
-            background-color: #f7f7f7;
+            margin: 20px;
+            background-color: #f4f4f4;
             text-align: center;
         }
         canvas {
-            max-width: 1000px;
-            height: 600px;
-            margin: auto;
+            width: 90vw;
+            height: 60vh;
         }
     </style>
 </head>
 <body>
-    <h2>Crypto & FRED Indicatoren</h2>
 
-    <div>
-        <label><input type="checkbox" class="indicator" value="GDP"> BBP (GDP)</label>
-        <label><input type="checkbox" class="indicator" value="UNRATE"> Werkloosheid (%)</label>
-        <label><input type="checkbox" class="indicator" value="CPIAUCSL"> Inflatie (CPI)</label>
-        <label><input type="checkbox" class="indicator" value="PPIACO"> Producentenprijsindex</label>
-        <label><input type="checkbox" class="indicator" value="HOUST"> Nieuwe woningen</label>
-    </div>
+<h2>Crypto & FRED Indicatoren</h2>
 
-    <div>
-        <label><input type="checkbox" class="crypto" value="bitcoin"> Bitcoin (€)</label>
-        <label><input type="checkbox" class="crypto" value="ripple"> XRP (€)</label>
-        <label><input type="checkbox" class="crypto" value="vechain"> VeChain (€)</label>
-        <label><input type="checkbox" class="crypto" value="bluzelle"> Bluzelle (€)</label>
-    </div>
+<!-- Economische indicatoren -->
+<div>
+    <label><input type="checkbox" class="indicator" value="GDP" checked> BBP (GDP)</label>
+    <label><input type="checkbox" class="indicator" value="UNRATE"> Werkloosheid (%)</label>
+    <label><input type="checkbox" class="indicator" value="CPIAUCNS"> Inflatie (CPI)</label>
+    <label><input type="checkbox" class="indicator" value="PPIACO"> Producentenprijsindex</label>
+    <label><input type="checkbox" class="indicator" value="HOUST"> Nieuwe woningen</label>
+</div>
 
-    <button onclick="updateChart()">Update Grafiek</button>
+<!-- Crypto -->
+<div>
+    <label><input type="checkbox" class="crypto" value="bitcoin" checked> Bitcoin (€)</label>
+    <label><input type="checkbox" class="crypto" value="ripple"> XRP (€)</label>
+    <label><input type="checkbox" class="crypto" value="vechain"> VeChain (€)</label>
+    <label><input type="checkbox" class="crypto" value="bluzelle"> Bluzelle (€)</label>
+</div>
 
-    <canvas id="chart"></canvas>
+<button onclick="updateChart()">Update Grafiek</button>
 
-    <script src="script.js"></script>
+<canvas id="chart"></canvas>
+
+<script>
+const ctx = document.getElementById('chart').getContext('2d');
+let chart;
+
+const FRED_API_KEY = '2e36ea2956c8ea9b075070975eb33c66';
+const FRED_BASE = 'https://api.stlouisfed.org/fred/series/observations';
+const CRYPTO_API = 'https://api.coingecko.com/api/v3/coins';
+
+async function fetchFredData(seriesId) {
+    try {
+        const response = await fetch(`${FRED_BASE}?series_id=${seriesId}&api_key=${FRED_API_KEY}&file_type=json`);
+        const data = await response.json();
+        return data.observations
+            .filter(obs => obs.value !== ".")
+            .map(obs => ({x: obs.date, y: parseFloat(obs.value)}));
+    } catch (err) {
+        console.error("Fout bij ophalen FRED-data:", err);
+        return [];
+    }
+}
+
+async function fetchCryptoPrices(id) {
+    try {
+        const res = await fetch(`${CRYPTO_API}/${id}/market_chart?vs_currency=eur&days=365`);
+        const json = await res.json();
+        return json.prices.map(p => ({
+            x: new Date(p[0]).toISOString().split('T')[0],
+            y: p[1]
+        }));
+    } catch (err) {
+        console.error("Fout bij ophalen crypto-data:", err);
+        return [];
+    }
+}
+
+async function updateChart() {
+    const indicatorEls = document.querySelectorAll('.indicator:checked');
+    const cryptoEls = document.querySelectorAll('.crypto:checked');
+    const datasets = [];
+
+    for (let el of indicatorEls) {
+        const data = await fetchFredData(el.value);
+        datasets.push({
+            label: `Econ. ${el.value}`,
+            data,
+            borderColor: getRandomColor(),
+            yAxisID: 'y',
+            tension: 0.3
+        });
+    }
+
+    for (let el of cryptoEls) {
+        const data = await fetchCryptoPrices(el.value);
+        datasets.push({
+            label: `Crypto ${el.value}`,
+            data,
+            borderColor: getRandomColor(),
+            yAxisID: 'y1',
+            tension: 0.3
+        });
+    }
+
+    if (chart) chart.destroy();
+
+    chart = new Chart(ctx, {
+        type: 'line',
+        data: { datasets },
+        options: {
+            responsive: true,
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+                x: {
+                    type: 'time',
+                    time: { unit: 'month' },
+                    title: { display: true, text: 'Datum' }
+                },
+                y: {
+                    type: 'linear',
+                    position: 'left',
+                    title: { display: true, text: 'Economische Indicator' }
+                },
+                y1: {
+                    type: 'linear',
+                    position: 'right',
+                    title: { display: true, text: 'Crypto (€)' },
+                    grid: { drawOnChartArea: false }
+                }
+            }
+        }
+    });
+}
+
+function getRandomColor() {
+    return `rgb(${[1,2,3].map(() => Math.floor(Math.random()*200)).join(',')})`;
+}
+
+updateChart(); // automatisch bij het laden
+</script>
+
 </body>
 </html>
