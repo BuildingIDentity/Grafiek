@@ -1,78 +1,67 @@
 const ctx = document.getElementById('chart').getContext('2d');
 let chart;
 
-const FRED_API = 'https://api.stlouisfed.org/fred/series/observations';
-const FRED_KEY = '2e36ea2956c8ea9b075070975eb33c66';
+const FRED_API_KEY = '2e36ea2956c8ea9b075070975eb33c66';
+const FRED_BASE = 'https://api.stlouisfed.org/fred/series/observations';
+const CRYPTO_API = 'https://api.coingecko.com/api/v3/coins';
 
-// Crypto in EUR
-async function fetchCrypto(crypto) {
-    const res = await fetch(`https://api.coingecko.com/api/v3/coins/${crypto}/market_chart?vs_currency=eur&days=30`);
-    const data = await res.json();
-    return data.prices.map(p => ({x: new Date(p[0]), y: p[1]}));
+async function fetchFredData(seriesId) {
+    const response = await fetch(`${FRED_BASE}?series_id=${seriesId}&api_key=${FRED_API_KEY}&file_type=json`);
+    const data = await response.json();
+    return data.observations.map(obs => ({x: obs.date, y: parseFloat(obs.value)}));
 }
 
-// Economische indicatoren van FRED
-async function fetchFred(series_id) {
-    const res = await fetch(`${FRED_API}?series_id=${series_id}&api_key=${FRED_KEY}&file_type=json`);
-    const data = await res.json();
-    return data.observations.map(obs => ({
-        x: new Date(obs.date),
-        y: parseFloat(obs.value)
-    })).filter(d => !isNaN(d.y));
+async function fetchCryptoPrices(id) {
+    const res = await fetch(`${CRYPTO_API}/${id}/market_chart?vs_currency=eur&days=365`);
+    const json = await res.json();
+    return json.prices.map(p => ({x: new Date(p[0]).toISOString().split('T')[0], y: p[1]}));
 }
 
 async function updateChart() {
-    const selectedIndicators = Array.from(document.querySelectorAll('.indicator:checked')).map(el => el.value);
-    const selectedCryptos = Array.from(document.querySelectorAll('.crypto:checked')).map(el => el.value);
-
+    const indicatorEls = document.querySelectorAll('.indicator:checked');
+    const cryptoEls = document.querySelectorAll('.crypto:checked');
     const datasets = [];
 
-    // Voeg indicatoren toe
-    for (const indicator of selectedIndicators) {
-        const data = await fetchFred(indicator);
+    for (let el of indicatorEls) {
+        const data = await fetchFredData(el.value);
         datasets.push({
-            label: `FRED - ${indicator}`,
+            label: `Econ. ${el.value}`,
             data,
             borderColor: getRandomColor(),
-            yAxisID: 'y'
+            yAxisID: 'y',
+            tension: 0.3
         });
     }
 
-    // Voeg crypto toe
-    for (const crypto of selectedCryptos) {
-        const data = await fetchCrypto(crypto);
+    for (let el of cryptoEls) {
+        const data = await fetchCryptoPrices(el.value);
         datasets.push({
-            label: `Crypto - ${crypto}`,
+            label: `Crypto ${el.value}`,
             data,
             borderColor: getRandomColor(),
-            yAxisID: 'y1'
+            yAxisID: 'y1',
+            tension: 0.3
         });
     }
 
-    if(chart) chart.destroy();
+    if (chart) chart.destroy();
 
     chart = new Chart(ctx, {
         type: 'line',
         data: { datasets },
         options: {
             responsive: true,
-            interaction: { mode: 'nearest', axis: 'x', intersect: false },
-            stacked: false,
+            interaction: { mode: 'index', intersect: false },
             scales: {
-                y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Economische Indicatoren' } },
-                y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'Crypto Prijs (€)' }, grid: { drawOnChartArea: false } }
+                y: { type: 'linear', position: 'left' },
+                y1: { type: 'linear', position: 'right' }
             }
         }
     });
 }
 
-// Willekeurige kleuren
 function getRandomColor() {
-    const r = Math.floor(Math.random() * 255);
-    const g = Math.floor(Math.random() * 255);
-    const b = Math.floor(Math.random() * 255);
-    return `rgb(${r},${g},${b})`;
+    return `rgb(${[1,2,3].map(() => Math.floor(Math.random()*255)).join(',')})`;
 }
 
-// Eerste keer grafiek laden
 updateChart();
