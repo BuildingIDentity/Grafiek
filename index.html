@@ -8,41 +8,38 @@
         body {
             font-family: Arial, sans-serif;
             margin: 40px;
-            background-color: #f0f0f0;
+            background-color: #f7f7f7;
             text-align: center;
         }
-        #chart {
-            max-width: 1200px;
-            max-height: 600px;
+        canvas {
+            max-width: 1000px;
+            height: 600px;
             margin: auto;
         }
     </style>
 </head>
 <body>
-    <h2>Crypto & FRED Economische Indicatoren</h2>
+    <h2>Crypto & FRED Indicatoren</h2>
 
     <div>
-        <!-- Economische indicatoren -->
         <label><input type="checkbox" class="indicator" value="GDP"> BBP (GDP)</label>
         <label><input type="checkbox" class="indicator" value="UNRATE"> Werkloosheid (%)</label>
         <label><input type="checkbox" class="indicator" value="CPIAUCSL"> Inflatie (CPI)</label>
-        <label><input type="checkbox" class="indicator" value="DGS10"> 10j Rente (%)</label>
-        <label><input type="checkbox" class="indicator" value="M2SL"> Geldvoorraad M2</label>
-        <label><input type="checkbox" class="indicator" value="PPIACO"> Producentenprijsindex (PPI)</label>
-        <label><input type="checkbox" class="indicator" value="INDPRO"> Industriële Productie</label>
+        <label><input type="checkbox" class="indicator" value="PPIACO"> Producentenprijsindex</label>
         <label><input type="checkbox" class="indicator" value="HOUST"> Nieuwe woningen</label>
     </div>
- <br>
+
     <div>
-        <strong>Crypto:</strong><br>
-        <input type="checkbox" class="crypto" value="bitcoin" id="bitcoin" checked> <label for="bitcoin">BTC (€)</label>
-        <input type="checkbox" class="crypto" value="ripple" id="ripple"> <label for="ripple">XRP (€)</label>
-        <input type="checkbox" class="crypto" value="vechain" id="vechain"> <label for="vechain">VeChain (€)</label>
-        <input type="checkbox" class="crypto" value="bluzelle" id="bluzelle"> <label for="bluzelle">Bluzelle (€)</label>
+        <label><input type="checkbox" class="crypto" value="bitcoin"> Bitcoin (€)</label>
+        <label><input type="checkbox" class="crypto" value="ripple"> XRP (€)</label>
+        <label><input type="checkbox" class="crypto" value="vechain"> VeChain (€)</label>
+        <label><input type="checkbox" class="crypto" value="bluzelle"> Bluzelle (€)</label>
     </div>
-    <br>
+
     <button onclick="updateChart()">Update Grafiek</button>
 
     <canvas id="chart"></canvas>
+
+    <script src="script.js"></script>
 </body>
 </html>
