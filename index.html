@@ -16,6 +16,12 @@
             height: 600px;
             margin: auto;
         }
+        iframe {
+            width: 670px;
+            height: 525px;
+            border: none;
+            margin-top: 30px;
+        }
     </style>
 </head>
 <body>
@@ -37,6 +43,11 @@
     </div>
 
     <button onclick="updateChart()">Update Grafiek</button>
+
+    <div>
+        <h3>FRED Grafiek</h3>
+        <iframe src="https://fred.stlouisfed.org/graph/graph-landing.php?g=1IMrW&width=670&height=475" scrolling="no" frameborder="0" style="overflow:hidden; width:670px; height:525px;" allowTransparency="true" loading="lazy"></iframe>
+    </div>
 
     <canvas id="chart"></canvas>
 
