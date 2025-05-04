@@ -1,206 +1,145 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Crypto & FRED Dashboard</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f6f9;
-      margin: 0;
-      padding: 20px;
-    }
-    h2 {
-      text-align: center;
-    }
-    #controls {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
-      margin-bottom: 20px;
-    }
-    #controls label {
-      margin-right: 10px;
-    }
-    #chart-container {
-      width: 100%;
-      height: 500px;
-    }
-    canvas {
-      width: 100% !important;
-      height: 100% !important;
-    }
-    #release-table {
-      margin: 40px auto;
-      width: 90%;
-      max-width: 900px;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    #release-table table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    #release-table th, #release-table td {
-      border: 1px solid #ccc;
-      padding: 10px;
-      text-align: left;
-    }
-    #release-table th {
-      background-color: #f0f0f0;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Crypto & FRED Indicatoren</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+        canvas {
+            width: 90vw;
+            height: 60vh;
+        }
+    </style>
 </head>
 <body>
-  <h2>Crypto & FRED Indicatoren</h2>
-  <div id="controls">
-    <div>
-      <strong>FRED:</strong>
-      <label><input type="checkbox" class="indicator" value="GDP"> BBP (GDP)</label>
-      <label><input type="checkbox" class="indicator" value="UNRATE"> Werkloosheid (%)</label>
-      <label><input type="checkbox" class="indicator" value="CPIEUCSL"> Inflatie (CPI)</label>
-    </div>
-    <div>
-      <strong>Crypto:</strong>
-      <label><input type="checkbox" class="crypto" value="bitcoin"> Bitcoin (€)</label>
-      <label><input type="checkbox" class="crypto" value="ripple"> XRP (€)</label>
-      <label><input type="checkbox" class="crypto" value="vechain"> VeChain (€)</label>
-      <label><input type="checkbox" class="crypto" value="bluzelle"> Bluzelle (€)</label>
-    </div>
-    <div>
-      <label>Van: <input type="date" id="fromDate"></label>
-      <label>Tot: <input type="date" id="toDate"></label>
-      <button onclick="updateChart()">Update Grafiek</button>
-    </div>
-  </div>
 
-  <div id="chart-container">
-    <canvas id="chart"></canvas>
-  </div>
+<h2>Crypto & FRED Indicatoren</h2>
 
-  <div id="release-table">
-    <h3>Recente FRED Releasedata</h3>
-    <table>
-      <thead>
-        <tr><th>Datum</th><th>Release</th><th>Link</th></tr>
-      </thead>
-      <tbody id="release-list"></tbody>
-    </table>
-  </div>
+<!-- Economische indicatoren -->
+<div>
+    <label><input type="checkbox" class="indicator" value="GDP" checked> BBP (GDP)</label>
+    <label><input type="checkbox" class="indicator" value="UNRATE"> Werkloosheid (%)</label>
+    <label><input type="checkbox" class="indicator" value="CPIAUCNS"> Inflatie (CPI)</label>
+    <label><input type="checkbox" class="indicator" value="PPIACO"> Producentenprijsindex</label>
+    <label><input type="checkbox" class="indicator" value="HOUST"> Nieuwe woningen</label>
+</div>
 
-  <script>
-    const ctx = document.getElementById('chart').getContext('2d');
-    let chart;
-    const FRED_API_KEY = '2e36ea2956c8ea9b075070975eb33c66';
-    const FRED_BASE = 'https://api.stlouisfed.org/fred/series/observations';
-    const CRYPTO_API = 'https://api.coingecko.com/api/v3/coins';
+<!-- Crypto -->
+<div>
+    <label><input type="checkbox" class="crypto" value="bitcoin" checked> Bitcoin (€)</label>
+    <label><input type="checkbox" class="crypto" value="ripple"> XRP (€)</label>
+    <label><input type="checkbox" class="crypto" value="vechain"> VeChain (€)</label>
+    <label><input type="checkbox" class="crypto" value="bluzelle"> Bluzelle (€)</label>
+</div>
 
-    async function fetchFredData(seriesId) {
-      const from = document.getElementById('fromDate').value;
-      const to = document.getElementById('toDate').value;
-      const url = `${FRED_BASE}?series_id=${seriesId}&api_key=${FRED_API_KEY}&file_type=json` +
-        (from ? `&observation_start=${from}` : '') + (to ? `&observation_end=${to}` : '');
-      const response = await fetch(url);
-      const data = await response.json();
-      return data.observations
-        .filter(obs => obs.value !== ".")
-        .map(obs => ({ x: obs.date, y: parseFloat(obs.value) }));
+<button onclick="updateChart()">Update Grafiek</button>
+
+<canvas id="chart"></canvas>
+
+<script>
+const ctx = document.getElementById('chart').getContext('2d');
+let chart;
+
+const FRED_API_KEY = '2e36ea2956c8ea9b075070975eb33c66';
+const FRED_BASE = 'https://api.stlouisfed.org/fred/series/observations';
+const CRYPTO_API = 'https://api.coingecko.com/api/v3/coins';
+
+async function fetchFredData(seriesId) {
+    try {
+        const response = await fetch(`${FRED_BASE}?series_id=${seriesId}&api_key=${FRED_API_KEY}&file_type=json`);
+        const data = await response.json();
+        return data.observations
+            .filter(obs => obs.value !== ".")
+            .map(obs => ({x: obs.date, y: parseFloat(obs.value)}));
+    } catch (err) {
+        console.error("Fout bij ophalen FRED-data:", err);
+        return [];
     }
+}
 
-    async function fetchCryptoPrices(id) {
-      const res = await fetch(`${CRYPTO_API}/${id}/market_chart?vs_currency=eur&days=365`);
-      const json = await res.json();
-      return json.prices.map(p => ({ x: new Date(p[0]).toISOString().split('T')[0], y: p[1] }));
+async function fetchCryptoPrices(id) {
+    try {
+        const res = await fetch(`${CRYPTO_API}/${id}/market_chart?vs_currency=eur&days=365`);
+        const json = await res.json();
+        return json.prices.map(p => ({
+            x: new Date(p[0]).toISOString().split('T')[0],
+            y: p[1]
+        }));
+    } catch (err) {
+        console.error("Fout bij ophalen crypto-data:", err);
+        return [];
     }
+}
 
-    async function updateChart() {
-      const indicatorEls = document.querySelectorAll('.indicator:checked');
-      const cryptoEls = document.querySelectorAll('.crypto:checked');
-      const datasets = [];
+async function updateChart() {
+    const indicatorEls = document.querySelectorAll('.indicator:checked');
+    const cryptoEls = document.querySelectorAll('.crypto:checked');
+    const datasets = [];
 
-      for (let el of indicatorEls) {
+    for (let el of indicatorEls) {
         const data = await fetchFredData(el.value);
         datasets.push({
-          label: `Econ. ${el.value}`,
-          data,
-          borderColor: getRandomColor(),
-          yAxisID: 'y',
-          tension: 0.4
+            label: `Econ. ${el.value}`,
+            data,
+            borderColor: getRandomColor(),
+            yAxisID: 'y',
+            tension: 0.3
         });
-      }
+    }
 
-      for (let el of cryptoEls) {
+    for (let el of cryptoEls) {
         const data = await fetchCryptoPrices(el.value);
         datasets.push({
-          label: `Crypto ${el.value}`,
-          data,
-          borderColor: getRandomColor(),
-          yAxisID: 'y1',
-          tension: 0.4
+            label: `Crypto ${el.value}`,
+            data,
+            borderColor: getRandomColor(),
+            yAxisID: 'y1',
+            tension: 0.3
         });
-      }
+    }
 
-      if (chart) chart.destroy();
-      chart = new Chart(ctx, {
+    if (chart) chart.destroy();
+
+    chart = new Chart(ctx, {
         type: 'line',
         data: { datasets },
         options: {
-          responsive: true,
-          interaction: { mode: 'index', intersect: false },
-          stacked: false,
-          plugins: {
-            legend: { position: 'top' },
-          },
-          scales: {
-            x: {
-              type: 'time',
-              time: {
-                unit: 'month'
-              }
-            },
-            y: {
-              type: 'linear',
-              position: 'left',
-              title: { display: true, text: 'Economische Indicatoren' }
-            },
-            y1: {
-              type: 'linear',
-              position: 'right',
-              title: { display: true, text: 'Crypto (€)' },
-              grid: { drawOnChartArea: false }
+            responsive: true,
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+                x: {
+                    type: 'time',
+                    time: { unit: 'month' },
+                    title: { display: true, text: 'Datum' }
+                },
+                y: {
+                    type: 'linear',
+                    position: 'left',
+                    title: { display: true, text: 'Economische Indicator' }
+                },
+                y1: {
+                    type: 'linear',
+                    position: 'right',
+                    title: { display: true, text: 'Crypto (€)' },
+                    grid: { drawOnChartArea: false }
+                }
             }
-          }
         }
-      });
-    }
+    });
+}
 
-    async function fetchFredReleaseDates() {
-      const res = await fetch(`https://api.stlouisfed.org/fred/releases?api_key=${FRED_API_KEY}&file_type=json`);
-      const json = await res.json();
-      const releases = json.releases.slice(0, 10);
-      const list = document.getElementById('release-list');
-      list.innerHTML = '';
-      for (let r of releases) {
-        const row = `<tr><td>${r.realtime_start}</td><td>${r.name}</td><td><a href="${r.link}" target="_blank">Meer info</a></td></tr>`;
-        list.innerHTML += row;
-      }
-    }
+function getRandomColor() {
+    return `rgb(${[1,2,3].map(() => Math.floor(Math.random()*200)).join(',')})`;
+}
 
-    function getRandomColor() {
-      return `rgb(${[1, 2, 3].map(() => Math.floor(Math.random() * 255)).join(',')})`;
-    }
+updateChart(); // automatisch bij het laden
+</script>
 
-    // Init
-    document.getElementById('fromDate').value = '2024-01-01';
-    document.getElementById('toDate').value = new Date().toISOString().split('T')[0];
-    updateChart();
-    fetchFredReleaseDates();
-  </script>
 </body>
 </html>
